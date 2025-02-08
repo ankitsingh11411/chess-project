@@ -16,7 +16,7 @@ const App = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        Chess Game
+        Chess Game by ASR
       </motion.h1>
 
       <AnimatePresence>
