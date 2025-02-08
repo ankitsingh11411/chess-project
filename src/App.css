@@ -7,33 +7,19 @@
   padding: 20px;
 }
 
-.theme-toggle-container {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.theme-toggle {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  padding: 10px 15px;
-  cursor: pointer;
+.play-button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 18px;
+  font-weight: bold;
   border: none;
   border-radius: 5px;
-  font-weight: bold;
+  cursor: pointer;
+  background-color: #007bff;
+  color: white;
   transition: background 0.3s ease;
 }
 
-.light .theme-toggle {
-  background-color: #000;
-  color: #fff;
-}
-
-.dark .theme-toggle {
-  background-color: #fff;
-  color: #000;
+.play-button:hover {
+  background-color: #0056b3;
 }
