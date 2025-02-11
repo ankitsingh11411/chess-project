@@ -2,10 +2,27 @@ import React, { useState, useEffect } from 'react';
 import { Chess } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
 import { motion } from 'framer-motion';
+import { Card, Divider } from 'antd';
 import styles from './Board.module.css';
 import ResultModal from './ResultModal';
 
 const LOCAL_STORAGE_KEY = 'chessGameState';
+const TAKEN_PIECES_KEY = 'takenPieces';
+
+const pieceIcons = {
+  p: '♙',
+  n: '♘',
+  b: '♗',
+  r: '♖',
+  q: '♕',
+  k: '♔',
+  P: '♟',
+  N: '♞',
+  B: '♝',
+  R: '♜',
+  Q: '♛',
+  K: '♚',
+};
 
 const Board = () => {
   const [game, setGame] = useState(new Chess());
@@ -14,18 +31,26 @@ const Board = () => {
   const [highlightedSquares, setHighlightedSquares] = useState({});
   const [winner, setWinner] = useState(null);
   const [moveHistory, setMoveHistory] = useState([]);
+  const [takenPieces, setTakenPieces] = useState({ white: [], black: [] });
 
   useEffect(() => {
     const savedFen = localStorage.getItem(LOCAL_STORAGE_KEY);
+    const savedTakenPieces = localStorage.getItem(TAKEN_PIECES_KEY);
+
     if (savedFen) {
       const savedGame = new Chess();
       savedGame.load(savedFen);
       setGame(savedGame);
     }
+
+    if (savedTakenPieces) {
+      setTakenPieces(JSON.parse(savedTakenPieces));
+    }
   }, []);
 
   const saveGameState = (gameInstance) => {
     localStorage.setItem(LOCAL_STORAGE_KEY, gameInstance.fen());
+    localStorage.setItem(TAKEN_PIECES_KEY, JSON.stringify(takenPieces));
   };
 
   const onSquareClick = (square) => {
@@ -69,6 +94,7 @@ const Board = () => {
     if (move === null) return;
 
     setMoveHistory([...moveHistory, move]);
+    updateCapturedPieces(move);
     checkForCheck(gameCopy);
     setGame(gameCopy);
     saveGameState(gameCopy);
@@ -79,6 +105,19 @@ const Board = () => {
       setWinner(gameCopy.turn() === 'w' ? 'Black Wins!' : 'White Wins!');
     } else if (gameCopy.isDraw()) {
       setWinner("It's a Draw!");
+    }
+  };
+
+  const updateCapturedPieces = (move) => {
+    if (move.captured) {
+      const color = move.color === 'w' ? 'black' : 'white';
+      const updatedPieces = {
+        ...takenPieces,
+        [color]: [...takenPieces[color], pieceIcons[move.captured]],
+      };
+
+      setTakenPieces(updatedPieces);
+      localStorage.setItem(TAKEN_PIECES_KEY, JSON.stringify(updatedPieces));
     }
   };
 
@@ -110,7 +149,9 @@ const Board = () => {
     setHighlightedSquares({});
     setWinner(null);
     setMoveHistory([]);
+    setTakenPieces({ white: [], black: [] });
     localStorage.removeItem(LOCAL_STORAGE_KEY);
+    localStorage.removeItem(TAKEN_PIECES_KEY);
   };
 
   const undoMove = () => {
@@ -139,6 +180,7 @@ const Board = () => {
         boardWidth={400}
         customSquareStyles={{ ...highlightedSquares, ...legalMoves }}
       />
+
       <div className={styles.buttonContainer}>
         <button className={styles.undoButton} onClick={undoMove}>
           Undo Move
@@ -147,6 +189,28 @@ const Board = () => {
           Reset Game
         </button>
       </div>
+
+      <motion.div className={styles.takenPiecesContainer}>
+        <Card className={styles.takenPiecesCard} title="Captured Pieces">
+          <motion.div className={styles.takenPiecesWrapper}>
+            <motion.div className={styles.takenPiecesWhite}>
+              {takenPieces.white.map((piece, index) => (
+                <motion.span key={index} className={styles.pieceIcon}>
+                  {piece}
+                </motion.span>
+              ))}
+            </motion.div>
+            <Divider className={styles.divider} />
+            <motion.div className={styles.takenPiecesBlack}>
+              {takenPieces.black.map((piece, index) => (
+                <motion.span key={index} className={styles.pieceIcon}>
+                  {piece}
+                </motion.span>
+              ))}
+            </motion.div>
+          </motion.div>
+        </Card>
+      </motion.div>
 
       {winner && <ResultModal result={winner} onReset={resetGame} />}
     </motion.div>
