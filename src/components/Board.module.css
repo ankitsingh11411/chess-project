@@ -4,20 +4,38 @@
   align-items: center;
   justify-content: center;
   margin-top: 20px;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 10px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  z-index: 2;
 }
 
-.resetButton {
-  margin-top: 10px;
+.buttonContainer {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.resetButton,
+.undoButton {
   padding: 10px 20px;
   font-size: 16px;
-  background-color: #ff4500;
-  color: white;
+  font-weight: bold;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  transition: background 0.3s ease;
+  background: var(--btn-back);
+  color: white;
+  transition: background 0.3s ease-in-out, transform 0.2s ease;
 }
 
 .resetButton:hover {
-  background-color: #cc3700;
+  background: #cc3700;
+  transform: scale(1.05);
+}
+.undoButton:hover {
+  background: #cc3700;
+  transform: scale(1.05);
 }

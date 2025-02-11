@@ -9,15 +9,17 @@ const App = () => {
 
   return (
     <div className="app-container">
+      <div className="chessboard-background"></div>
       <ThemeSwitch />
 
-      <motion.h1
+      <motion.div
+        className="title-container"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        Chess Game by ASR
-      </motion.h1>
+        <h1 className="app-title">Chess Game by ASR</h1>
+      </motion.div>
 
       <AnimatePresence>
         {!gameStarted && (
