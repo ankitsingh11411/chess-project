@@ -13,6 +13,7 @@ const Board = () => {
   const [legalMoves, setLegalMoves] = useState({});
   const [highlightedSquares, setHighlightedSquares] = useState({});
   const [winner, setWinner] = useState(null);
+  const [moveHistory, setMoveHistory] = useState([]);
 
   useEffect(() => {
     const savedFen = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -67,6 +68,7 @@ const Board = () => {
 
     if (move === null) return;
 
+    setMoveHistory([...moveHistory, move]);
     checkForCheck(gameCopy);
     setGame(gameCopy);
     saveGameState(gameCopy);
@@ -107,7 +109,20 @@ const Board = () => {
     setLegalMoves({});
     setHighlightedSquares({});
     setWinner(null);
+    setMoveHistory([]);
     localStorage.removeItem(LOCAL_STORAGE_KEY);
+  };
+
+  const undoMove = () => {
+    if (moveHistory.length === 0) return;
+
+    const gameCopy = new Chess();
+    gameCopy.loadPgn(game.pgn());
+    gameCopy.undo();
+
+    setMoveHistory(moveHistory.slice(0, -1));
+    setGame(gameCopy);
+    saveGameState(gameCopy);
   };
 
   return (
@@ -124,9 +139,14 @@ const Board = () => {
         boardWidth={400}
         customSquareStyles={{ ...highlightedSquares, ...legalMoves }}
       />
-      <button className={styles.resetButton} onClick={resetGame}>
-        Reset Game
-      </button>
+      <div className={styles.buttonContainer}>
+        <button className={styles.undoButton} onClick={undoMove}>
+          Undo Move
+        </button>
+        <button className={styles.resetButton} onClick={resetGame}>
+          Reset Game
+        </button>
+      </div>
 
       {winner && <ResultModal result={winner} onReset={resetGame} />}
     </motion.div>
