@@ -6,7 +6,7 @@ import ResultModal from './ResultModal';
 import CapturedPieces from './CapturedPieces';
 import styles from './Board.module.css';
 
-const LOCAL_STORAGE_KEY = 'chessGameState';
+const PGN_STORAGE_KEY = 'chessGamePGN';
 const TAKEN_PIECES_KEY = 'takenPieces';
 
 const pieceIcons = {
@@ -25,32 +25,46 @@ const pieceIcons = {
 };
 
 const Board = () => {
-  const [game, setGame] = useState(new Chess());
+  const [game, setGame] = useState(() => {
+    const savedPgn = localStorage.getItem(PGN_STORAGE_KEY);
+    const gameInstance = new Chess();
+    if (savedPgn) gameInstance.loadPgn(savedPgn);
+    return gameInstance;
+  });
   const [selectedSquare, setSelectedSquare] = useState(null);
   const [legalMoves, setLegalMoves] = useState({});
   const [highlightedSquares, setHighlightedSquares] = useState({});
   const [winner, setWinner] = useState(null);
   const [moveHistory, setMoveHistory] = useState([]);
-  const [takenPieces, setTakenPieces] = useState({ white: [], black: [] });
+  const [takenPieces, setTakenPieces] = useState(() => {
+    const savedTakenPieces = localStorage.getItem(TAKEN_PIECES_KEY);
+    return savedTakenPieces
+      ? JSON.parse(savedTakenPieces)
+      : { white: [], black: [] };
+  });
+  const [theme, setTheme] = useState(
+    document.documentElement.getAttribute('data-theme') || 'light'
+  );
 
   useEffect(() => {
-    const savedFen = localStorage.getItem(LOCAL_STORAGE_KEY);
-    const savedTakenPieces = localStorage.getItem(TAKEN_PIECES_KEY);
+    const observer = new MutationObserver(() => {
+      setTheme(document.documentElement.getAttribute('data-theme'));
+    });
 
-    if (savedFen) {
-      const savedGame = new Chess();
-      savedGame.load(savedFen);
-      setGame(savedGame);
-    }
+    observer.observe(document.documentElement, { attributes: true });
 
-    if (savedTakenPieces) {
-      setTakenPieces(JSON.parse(savedTakenPieces));
-    }
+    return () => observer.disconnect();
   }, []);
 
   const saveGameState = (gameInstance, updatedTakenPieces) => {
-    localStorage.setItem(LOCAL_STORAGE_KEY, gameInstance.fen());
+    localStorage.setItem(PGN_STORAGE_KEY, gameInstance.pgn());
     localStorage.setItem(TAKEN_PIECES_KEY, JSON.stringify(updatedTakenPieces));
+  };
+
+  const getBoardColors = () => {
+    return theme === 'dark'
+      ? { light: '#9E9E9E', dark: '#424242' }
+      : { light: '#EEDFCC', dark: '#8B5A2B' };
   };
 
   const onSquareClick = (square) => {
@@ -145,7 +159,7 @@ const Board = () => {
     setWinner(null);
     setMoveHistory([]);
     setTakenPieces({ white: [], black: [] });
-    localStorage.removeItem(LOCAL_STORAGE_KEY);
+    localStorage.removeItem(PGN_STORAGE_KEY);
     localStorage.removeItem(TAKEN_PIECES_KEY);
   };
 
@@ -186,6 +200,8 @@ const Board = () => {
         onPieceDrop={(source, target) => makeMove(target)}
         onSquareClick={onSquareClick}
         boardWidth={400}
+        customDarkSquareStyle={{ backgroundColor: getBoardColors().dark }}
+        customLightSquareStyle={{ backgroundColor: getBoardColors().light }}
         customSquareStyles={{ ...highlightedSquares, ...legalMoves }}
       />
 
@@ -197,6 +213,7 @@ const Board = () => {
           Reset Game
         </button>
       </div>
+
       <CapturedPieces takenPieces={takenPieces} />
       {winner && <ResultModal result={winner} onReset={resetGame} />}
     </motion.div>
