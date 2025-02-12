@@ -129,10 +129,17 @@ const AIBoard = () => {
     if (!move.captured) return takenPieces;
 
     const color = move.color === 'w' ? 'black' : 'white';
+    const capturedPiece =
+      move.color === 'w' ? move.captured.toUpperCase() : move.captured;
+
     const updatedPieces = {
       ...takenPieces,
-      [color]: [...takenPieces[color], pieceIcons[move.captured]],
+      [color]: [...takenPieces[color], pieceIcons[capturedPiece]],
     };
+
+    console.log('Captured Piece:', move.captured);
+    console.log('Captured By:', move.color);
+    console.log('Updated Taken Pieces:', updatedPieces);
 
     setTakenPieces(updatedPieces);
     return updatedPieces;
@@ -216,7 +223,6 @@ const AIBoard = () => {
         </button>
       </div>
 
-      <CapturedPieces takenPieces={takenPieces} />
       {winner && <ResultModal result={winner} onReset={resetGame} />}
     </motion.div>
   );
