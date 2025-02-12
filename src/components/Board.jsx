@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Chess } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
 import { motion } from 'framer-motion';
-import { Card, Divider } from 'antd';
-import styles from './Board.module.css';
 import ResultModal from './ResultModal';
+import CapturedPieces from './CapturedPieces';
+import styles from './Board.module.css';
 
 const LOCAL_STORAGE_KEY = 'chessGameState';
 const TAKEN_PIECES_KEY = 'takenPieces';
@@ -48,9 +48,9 @@ const Board = () => {
     }
   }, []);
 
-  const saveGameState = (gameInstance) => {
+  const saveGameState = (gameInstance, updatedTakenPieces) => {
     localStorage.setItem(LOCAL_STORAGE_KEY, gameInstance.fen());
-    localStorage.setItem(TAKEN_PIECES_KEY, JSON.stringify(takenPieces));
+    localStorage.setItem(TAKEN_PIECES_KEY, JSON.stringify(updatedTakenPieces));
   };
 
   const onSquareClick = (square) => {
@@ -63,12 +63,7 @@ const Board = () => {
     if (moves.length === 0) return;
 
     const piece = game.get(square);
-    if (!piece) return;
-
-    if (game.turn() !== piece.color) {
-      if (navigator.vibrate) navigator.vibrate(200);
-      return;
-    }
+    if (!piece || game.turn() !== piece.color) return;
 
     const newLegalMoves = {};
     moves.forEach((move) => {
@@ -91,13 +86,13 @@ const Board = () => {
       promotion: 'q',
     });
 
-    if (move === null) return;
+    if (!move) return;
 
+    const updatedPieces = updateCapturedPieces(move);
     setMoveHistory([...moveHistory, move]);
-    updateCapturedPieces(move);
     checkForCheck(gameCopy);
     setGame(gameCopy);
-    saveGameState(gameCopy);
+    saveGameState(gameCopy, updatedPieces);
     setSelectedSquare(null);
     setLegalMoves({});
 
@@ -109,16 +104,16 @@ const Board = () => {
   };
 
   const updateCapturedPieces = (move) => {
-    if (move.captured) {
-      const color = move.color === 'w' ? 'black' : 'white';
-      const updatedPieces = {
-        ...takenPieces,
-        [color]: [...takenPieces[color], pieceIcons[move.captured]],
-      };
+    if (!move.captured) return takenPieces;
 
-      setTakenPieces(updatedPieces);
-      localStorage.setItem(TAKEN_PIECES_KEY, JSON.stringify(updatedPieces));
-    }
+    const color = move.color === 'w' ? 'black' : 'white';
+    const updatedPieces = {
+      ...takenPieces,
+      [color]: [...takenPieces[color], pieceIcons[move.captured]],
+    };
+
+    setTakenPieces(updatedPieces);
+    return updatedPieces;
   };
 
   const checkForCheck = (gameInstance) => {
@@ -163,7 +158,7 @@ const Board = () => {
 
     setMoveHistory(moveHistory.slice(0, -1));
     setGame(gameCopy);
-    saveGameState(gameCopy);
+    saveGameState(gameCopy, takenPieces);
   };
 
   return (
@@ -189,29 +184,7 @@ const Board = () => {
           Reset Game
         </button>
       </div>
-
-      <motion.div className={styles.takenPiecesContainer}>
-        <Card className={styles.takenPiecesCard} title="Captured Pieces">
-          <motion.div className={styles.takenPiecesWrapper}>
-            <motion.div className={styles.takenPiecesWhite}>
-              {takenPieces.white.map((piece, index) => (
-                <motion.span key={index} className={styles.pieceIcon}>
-                  {piece}
-                </motion.span>
-              ))}
-            </motion.div>
-            <Divider className={styles.divider} />
-            <motion.div className={styles.takenPiecesBlack}>
-              {takenPieces.black.map((piece, index) => (
-                <motion.span key={index} className={styles.pieceIcon}>
-                  {piece}
-                </motion.span>
-              ))}
-            </motion.div>
-          </motion.div>
-        </Card>
-      </motion.div>
-
+      <CapturedPieces takenPieces={takenPieces} />
       {winner && <ResultModal result={winner} onReset={resetGame} />}
     </motion.div>
   );

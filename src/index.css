@@ -5,7 +5,7 @@ html[data-theme='dark'] {
 }
 
 html[data-theme='light'] {
-  --bg: #ffffff;
+  --bg: #bbbbbb;
   --text: #000000;
   --btn-back: rgb(0, 0, 94);
 }
