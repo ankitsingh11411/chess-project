@@ -154,11 +154,24 @@ const Board = () => {
 
     const gameCopy = new Chess();
     gameCopy.loadPgn(game.pgn());
+
+    const lastMove = moveHistory[moveHistory.length - 1];
     gameCopy.undo();
+
+    if (lastMove.captured) {
+      const color = lastMove.color === 'w' ? 'black' : 'white';
+      const updatedPieces = { ...takenPieces };
+
+      updatedPieces[color] = updatedPieces[color].slice(0, -1);
+
+      setTakenPieces(updatedPieces);
+      saveGameState(gameCopy, updatedPieces);
+    } else {
+      saveGameState(gameCopy, takenPieces);
+    }
 
     setMoveHistory(moveHistory.slice(0, -1));
     setGame(gameCopy);
-    saveGameState(gameCopy, takenPieces);
   };
 
   return (
