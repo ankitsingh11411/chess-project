@@ -42,7 +42,7 @@
 
 .app-title {
   text-align: center;
-  color: white;
+  color: var(--text);
   font-size: 2rem;
   font-weight: bold;
   margin: 0;

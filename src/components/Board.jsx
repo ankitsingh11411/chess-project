@@ -200,8 +200,14 @@ const Board = () => {
         onPieceDrop={(source, target) => makeMove(target)}
         onSquareClick={onSquareClick}
         boardWidth={400}
-        customDarkSquareStyle={{ backgroundColor: getBoardColors().dark }}
-        customLightSquareStyle={{ backgroundColor: getBoardColors().light }}
+        customDarkSquareStyle={{
+          backgroundColor: getBoardColors().dark,
+          transition: 'background-color 0.3s ease-in-out',
+        }}
+        customLightSquareStyle={{
+          backgroundColor: getBoardColors().light,
+          transition: 'background-color 0.3s ease-in-out',
+        }}
         customSquareStyles={{ ...highlightedSquares, ...legalMoves }}
       />
 

@@ -7,7 +7,7 @@ html[data-theme='dark'] {
 html[data-theme='light'] {
   --bg: #bbbbbb;
   --text: #000000;
-  --btn-back: rgb(0, 0, 94);
+  --btn-back: rgb(0, 63, 146);
 }
 
 * {
